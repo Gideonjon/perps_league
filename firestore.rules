@@ -1,0 +1,115 @@
+rules_version = '2';
+
+// Perps League security rules (Firebase Spark plan, no Cloud Functions).
+//
+// Scores are never stored: every client computes them from the public dreamDEX
+// indexer. Firestore only holds who is in which league and trade notes, so the
+// rules focus on: you can only write your own data, and you can only add
+// yourself (once, with your own wallet) to a league that hasn't ended.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function leaguePath(leagueId) {
+      return /databases/$(database)/documents/leagues/$(leagueId);
+    }
+
+    function isMember(leagueId) {
+      return signedIn() && request.auth.uid in get(leaguePath(leagueId)).data.memberUids;
+    }
+
+    // State after the current batch, used when joining (league + member doc
+    // are written together).
+    function isMemberAfter(leagueId) {
+      return signedIn() && request.auth.uid in getAfter(leaguePath(leagueId)).data.memberUids;
+    }
+
+    function validWallet(w) {
+      return w is string && w.matches('^0x[0-9a-f]{40}$');
+    }
+
+    function myWallet() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.wallet;
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow create, update: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.displayName is string
+        && request.resource.data.displayName.size() > 0
+        && request.resource.data.displayName.size() <= 30
+        && validWallet(request.resource.data.wallet);
+      allow delete: if false;
+    }
+
+    match /leagues/{leagueId} {
+      // Readable by any signed-in user so invite codes can be looked up.
+      allow read: if signedIn();
+
+      allow create: if signedIn()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.memberUids == [request.auth.uid]
+        && request.resource.data.wallets == [myWallet()]
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 40
+        && request.resource.data.inviteCode is string
+        && request.resource.data.inviteCode.size() == 6
+        && request.resource.data.startAt is timestamp
+        && request.resource.data.endAt is timestamp
+        && request.resource.data.endAt > request.resource.data.startAt;
+
+      // Joining: add exactly yourself and your own wallet, before the end,
+      // while there is room. A wallet already present can't be added twice
+      // (arrayUnion wouldn't grow the list, so the size check fails).
+      allow update: if signedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['memberUids', 'wallets'])
+        && !(request.auth.uid in resource.data.memberUids)
+        && request.resource.data.memberUids.hasAll(resource.data.memberUids)
+        && request.resource.data.memberUids.size() == resource.data.memberUids.size() + 1
+        && request.auth.uid in request.resource.data.memberUids
+        && request.resource.data.wallets.hasAll(resource.data.wallets)
+        && request.resource.data.wallets.size() == resource.data.wallets.size() + 1
+        && myWallet() in request.resource.data.wallets
+        && resource.data.memberUids.size() < 50
+        && request.time < resource.data.endAt;
+
+      allow delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
+
+      match /members/{uid} {
+        allow read: if isMember(leagueId);
+        allow create: if signedIn()
+          && request.auth.uid == uid
+          && isMemberAfter(leagueId)
+          && request.resource.data.wallet == myWallet()
+          && request.resource.data.displayName is string
+          && request.resource.data.displayName.size() <= 30;
+        allow update, delete: if false;
+      }
+
+      // Notes on your own trades. Doc id is `${eventId}_${uid}`, so nobody can
+      // write a note that displays against someone else's trade.
+      match /notes/{noteId} {
+        allow read: if isMember(leagueId);
+        allow create: if isMember(leagueId)
+          && request.resource.data.uid == request.auth.uid
+          && noteId == request.resource.data.eventId + '_' + request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 280;
+        allow update: if isMember(leagueId)
+          && resource.data.uid == request.auth.uid
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.eventId == resource.data.eventId
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 280;
+        allow delete: if signedIn() && resource.data.uid == request.auth.uid;
+      }
+    }
+  }
+}
