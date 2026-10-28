@@ -1,19 +1,42 @@
 name: perps_league
-description: "A new Flutter project."
-publish_to: 'none'
-version: 0.1.0+1
+description: Trading leagues for dreamDEX perps on Somnia testnet. Compete with friends on real testnet P&L.
+publish_to: "none"
+version: 0.2.0+2
 
 environment:
-  sdk: ^3.13.0
+  sdk: ">=3.7.0 <4.0.0"
+  flutter: ">=3.29.0"
 
 dependencies:
   flutter:
     sdk: flutter
+  firebase_core: ^3.13.0
+  firebase_auth: ^5.5.0
+  cloud_firestore: ^5.6.0
+  http: ^1.2.2
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^6.0.0
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.3
 
 flutter:
   uses-material-design: true
+
+# `dart run flutter_launcher_icons` (tool/setup.dart runs it for you)
+# generates the Android, iOS and web icons from the podium-candle mark.
+flutter_launcher_icons:
+  image_path: "assets/icon/icon.png"
+  android: true
+  min_sdk_android: 23
+  adaptive_icon_background: "#0A0E13"
+  adaptive_icon_foreground: "assets/icon/foreground.png"
+  ios: true
+  remove_alpha_ios: true
+  web:
+    generate: true
+    image_path: "assets/icon/icon.png"
+    background_color: "#0A0E13"
+    theme_color: "#0A0E13"
