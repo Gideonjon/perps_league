@@ -1,0 +1,75 @@
+{
+  "environment": {
+    "chain_metadata": [
+      {
+        "chain_id": 50383,
+        "latest_processed_block": 35159884
+      }
+    ],
+    "capturedAtUtc": "2026-10-28T06:32:34.936717Z",
+    "indexer": "https://hideki-dev.smk.somnia.host/v1/graphql",
+    "sdk": "@somnia-chain/markets-sdk@0.32.1",
+    "network": "Somnia Tokyo testnet (Hideki, chain 50383)"
+  },
+  "requests": [
+    {
+      "request": {
+        "url": "https://hideki-dev.smk.somnia.host/v1/graphql",
+        "query": "query { PerpPosition(where: { size: { _neq: \"0\" }, isLong: { _eq: false } }, order_by: { updatedAt: desc }, limit: 1) {\n  pool account size isLong updatedAt } }",
+        "variables": {}
+      },
+      "response": {
+        "status": 200,
+        "ms": 1353,
+        "body": {
+          "data": {
+            "PerpPosition": [
+              {
+                "pool": "0x0f464d57c1fd839e4d87a408bbccdab8f77e6394",
+                "account": "0xab8b612548cc3f5f9f7e723823be37058d0110b2",
+                "size": "4384000000000000000000",
+                "isLong": false,
+                "updatedAt": "1793169155"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "url": "https://hideki-dev.smk.somnia.host/v1/graphql",
+        "query": "query ($acct: String!, $pool: String!) { PerpPositionChange(\n  where: { account: { _eq: $acct }, pool: { _eq: $pool } },\n  order_by: [{ blockNumber: desc }, { logIndex: desc }], limit: 1) {\n  kind sizeBefore sizeAfter timestamp txHash } }",
+        "variables": {
+          "acct": "0xab8b612548cc3f5f9f7e723823be37058d0110b2",
+          "pool": "0x0f464d57c1fd839e4d87a408bbccdab8f77e6394"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ms": 1728,
+        "body": {
+          "data": {
+            "PerpPositionChange": [
+              {
+                "kind": "INCREASE",
+                "sizeBefore": "-3390000000000000000000",
+                "sizeAfter": "-4384000000000000000000",
+                "timestamp": "1793169155",
+                "txHash": "0xa8151dd63e8c00b3210bf6b8b7a43fda5210ed533747961d5b88eaf2fcb9428d"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "analysis": {
+    "account": "0xab8b612548cc3f5f9f7e723823be37058d0110b2",
+    "pool": "0x0f464d57c1fd839e4d87a408bbccdab8f77e6394",
+    "PerpPosition.size": "4384000000000000000000",
+    "PerpPosition.isLong": false,
+    "PerpPositionChange.sizeAfter (latest)": "-4384000000000000000000",
+    "conclusion": "Same short position: PerpPosition.size is unsigned (direction in isLong); PerpPositionChange.sizeAfter is signed negative."
+  }
+}

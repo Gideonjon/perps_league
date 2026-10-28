@@ -26,7 +26,7 @@ class AppConfig {
   /// Public URL of the hosted web app (Firebase Hosting). Used to build
   /// invite links from the Android and iOS apps. On the web the current
   /// origin is used instead, so this can stay empty there.
-  static const String _appUrl = String.fromEnvironment('APP_URL');
+  static const String _appUrl = 'https://perpsleague.web.app';
 
   /// Hard cap on league size: keeps the live leaderboard to a handful of
   /// indexer calls and matches the limit in firestore.rules.

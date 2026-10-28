@@ -1,0 +1,76 @@
+{
+  "environment": {
+    "chain_metadata": [
+      {
+        "chain_id": 50383,
+        "latest_processed_block": 35159884
+      }
+    ],
+    "capturedAtUtc": "2026-10-28T06:32:34.936717Z",
+    "indexer": "https://hideki-dev.smk.somnia.host/v1/graphql",
+    "sdk": "@somnia-chain/markets-sdk@0.32.1",
+    "network": "Somnia Tokyo testnet (Hideki, chain 50383)"
+  },
+  "requests": [
+    {
+      "request": {
+        "url": "https://hideki-dev.smk.somnia.host/v1/graphql",
+        "query": "query { PerpPosition(where: { size: { _neq: \"0\" } }, order_by: { updatedAt: desc }, limit: 1) {\n  pool account size isLong entryPriceX18 updatedAt } }",
+        "variables": {}
+      },
+      "response": {
+        "status": 200,
+        "ms": 2348,
+        "body": {
+          "data": {
+            "PerpPosition": [
+              {
+                "pool": "0x0f464d57c1fd839e4d87a408bbccdab8f77e6394",
+                "account": "0xab8b612548cc3f5f9f7e723823be37058d0110b2",
+                "size": "4384000000000000000000",
+                "isLong": false,
+                "entryPriceX18": "437093020072992700",
+                "updatedAt": "1793169155"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "url": "https://hideki-dev.smk.somnia.host/v1/graphql",
+        "query": "query ($pool: String!) { Market(where: { poolAddress: { _eq: $pool } }, limit: 1) {\n  baseSymbol quoteSymbol baseDecimals quoteDecimals markPrice lastPrice } }",
+        "variables": {
+          "pool": "0x0f464d57c1fd839e4d87a408bbccdab8f77e6394"
+        }
+      },
+      "response": {
+        "status": 200,
+        "ms": 1879,
+        "body": {
+          "data": {
+            "Market": [
+              {
+                "baseSymbol": "WLD",
+                "quoteSymbol": "USDso",
+                "baseDecimals": 18,
+                "quoteDecimals": 18,
+                "markPrice": "435967739078500000",
+                "lastPrice": "437100000000000000"
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "analysis": {
+    "market": "WLD-PERP",
+    "entryPriceX18_raw": "437093020072992700",
+    "entryPriceX18 / 1e18 (what the name implies)": 0.4370930200729927,
+    "entryPriceX18 / 10^quoteDecimals": 0.4370930200729927,
+    "markPrice / 10^quoteDecimals": 0.43596773907849995,
+    "conclusion": "The /10^quoteDecimals value is near the mark price; the /1e18 value is not."
+  }
+}
