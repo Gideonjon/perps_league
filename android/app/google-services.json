@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "427794411026",
+    "project_id": "perpsleague",
+    "storage_bucket": "perpsleague.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:427794411026:android:6ff7fe52c81c9a4c9372cb",
+        "android_client_info": {
+          "package_name": "com.example.perps_league"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD93Sc-DeU4m66zOfutOGmt5C6rVVbG0Uw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
